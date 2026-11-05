@@ -62,7 +62,7 @@ async function propose(env: Env, champion: Record<string, string>, funnel: unkno
     model: MODELS.small,
     max_tokens: 2000,
     output_config: { effort: "medium", format: zodOutputFormat(Proposal) },
-    system: `Je schrijft één nieuwe testvariant voor de kop (h1) en knop (cta) van klopmijnofferte.nl, een onafhankelijke check voor offertes van hybride warmtepompen.
+    system: `Je schrijft één nieuwe testvariant voor de kop (h1) en knop (cta) van kloptmijnofferte.nl, een onafhankelijke check voor offertes van hybride warmtepompen.
 Huisstijl: "je", nooit "u". Korte zinnen, B1. Cijfers boven bijvoeglijke naamwoorden. Eerlijk over onzekerheid. Geen angst, geen urgentie, geen uitroeptekens. Nooit "gratis offertes", "goedkoopste", "gegarandeerd", "100% veilig". Noem nooit een bedrag, percentage, aantal of subsidiebedrag, en geen merk- of bedrijfsnamen. Geen hoofdletterwoorden. Kop max. 12 woorden, knop max. 4 woorden.`,
     messages: [{ role: "user", content: `Huidige winnaar: ${JSON.stringify(champion)}\nEerder getest: ${history.join(" | ")}\nFunnel afgelopen 28 dagen: ${JSON.stringify(funnel)}\nBedenk één duidelijk andere variant die meer mensen laat uploaden.` }],
   });

@@ -1,5 +1,5 @@
 {
-  "name": "klopmijnofferte-web",
+  "name": "kloptmijnofferte-web",
   "private": true,
   "type": "module",
   "scripts": { "dev": "astro dev", "build": "astro build", "preview": "astro preview" },
