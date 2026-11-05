@@ -1,0 +1,40 @@
+---
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="nl" data-api={import.meta.env.PUBLIC_API_BASE ?? ""}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <script src="/k.js" is:inline defer></script>
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <style is:global>
+      :root { --bg:#fbfaf7; --fg:#1d2321; --muted:#5b6662; --line:#dfe3e0; --accent:#1f6f54; --low:#2f7d4f; --mid:#8a6d1d; --high:#a33b2b; --card:#fff; }
+      @media (prefers-color-scheme: dark) { :root { --bg:#141816; --fg:#e8ece9; --muted:#a3ada8; --line:#2c3330; --accent:#5cc49b; --low:#6fcf97; --mid:#e0bd5a; --high:#f08c7a; --card:#1b201e; } }
+      * { box-sizing: border-box; }
+      body { margin:0; background:var(--bg); color:var(--fg); font:17px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+      main, header, footer { max-width: 44rem; margin: 0 auto; padding: 0 16px; }
+      header { padding-top: 20px; display:flex; flex-wrap:wrap; gap:6px 16px; justify-content:space-between; align-items:baseline; }
+      header a { color: var(--fg); text-decoration: none; font-weight: 700; }
+      nav a { font-weight: 400; color: var(--muted); margin-right: 14px; }
+      h1 { font-size: 2rem; line-height: 1.2; margin: 32px 0 12px; }
+      h2 { font-size: 1.3rem; margin-top: 32px; }
+      p, li { color: var(--fg); }
+      .muted { color: var(--muted); font-size: .92rem; }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 20px 0; }
+      button, .btn { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 12px 20px; font-size: 1rem; cursor: pointer; }
+      button[disabled] { opacity: .5; cursor: wait; }
+      input[type=text], input[type=email] { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font-size: 1rem; width: 100%; max-width: 16rem; }
+      label { display: block; margin: 12px 0; }
+      footer { margin-top: 48px; padding-bottom: 32px; }
+      table { border-collapse: collapse; width: 100%; } td, th { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+    </style>
+  </head>
+  <body>
+    <header><a href="/">klopmijnofferte.nl</a><nav><a href="/bereken">Bereken</a><a href="/prijzen/hybride-warmtepomp">Prijzen</a><a href="/privacy">Privacy</a></nav></header>
+    <main><slot /></main>
+    <footer class="muted">Onafhankelijk. We krijgen geen geld van installateurs en verkopen geen leads. We beoordelen prijzen, nooit bedrijven.</footer>
+  </body>
+</html>

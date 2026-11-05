@@ -1,0 +1,20 @@
+---
+import Base from "../../layouts/Base.astro";
+import priors from "../../../../src/core/data/hybrid_price_priors.json";
+import { priorBand } from "../../../../src/core/fairness";
+const eur = (x: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(x);
+const b = priorBand();
+const names: Record<string, string> = { labour: "Arbeid", connection_kit_materials: "Aansluitset en materiaal", hybrid_materials: "Materiaal hybride opstelling", hydraulic_balancing: "Waterzijdig inregelen", electrical_group: "Extra elektragroep", flue_replacement: "Rookgasafvoer vervangen", work_at_height: "Werken op hoogte", concrete_drilling_per_hole: "Kernboring (per gat)", thermostat: "Thermostaat", extra_pipe_per_m: "Extra leiding (per meter)" };
+---
+<Base title="Wat kost een hybride warmtepomp in 2026? Prijzen en bandbreedte" description={`Een hybride warmtepomp kost meestal ${eur(b.p25)} tot ${eur(b.p75)} inclusief installatie en btw, vóór subsidie. Bekijk de prijs per onderdeel.`}>
+  <h1>Wat kost een hybride warmtepomp?</h1>
+  <p>Een hybride warmtepomp kost meestal <strong>{eur(b.p25)} tot {eur(b.p75)}</strong>, inclusief installatie en 21% btw, vóór ISDE-subsidie.</p>
+  <p class="muted">Dit is nu nog een indicatie uit openbare prijzen ({priors.as_of}). Zodra we per regio minstens 5 offertes van 3 verschillende installateurs hebben, tonen we hier echte middenprijzen.</p>
+  <h2>Prijs per onderdeel</h2>
+  <table>
+    <tr><th>Onderdeel</th><th>Gebruikelijk</th></tr>
+    {Object.entries(priors.components).map(([k, [lo, hi]]) => <tr><td>{names[k] ?? k}</td><td>{lo === hi ? eur(lo) : `${eur(lo)} tot ${eur(hi)}`}</td></tr>)}
+  </table>
+  <p><a class="btn" href="/">Check je eigen offerte</a> <a href="/bereken">of bereken je subsidie en besparing</a></p>
+  <p class="muted">Bronnen: {priors.sources.map((s, i) => <a href={s}>[{i + 1}]</a>)}</p>
+</Base>

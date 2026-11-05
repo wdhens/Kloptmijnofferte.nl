@@ -1,0 +1,9 @@
+{
+  "as_of": "2026-11-05",
+  "gas_saving_share": { "low": 0.6, "study": 0.75 },
+  "gas_saving_source": "Demonstratieproject Hybride Warmtepompen (BZK, KGG, RVO, Techniek Nederland, VvDW; verified by University of Twente): 174 homes, average 75% gas saving. https://solarmagazine.nl/nieuws-zonne-energie/i39474/hybride-warmtepomp-leidt-tot-75-procent-besparing-op-gas",
+  "gas_mj_per_m3": 31.65,
+  "boiler_efficiency": 0.9,
+  "scop": 3.5,
+  "note": "low share and SCOP are our own conservative assumptions, to be replaced by measured data; gas MJ/m3 is the Dutch upper-heating-value convention (Groningen-quality)"
+}

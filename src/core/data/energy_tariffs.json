@@ -1,0 +1,12 @@
+{
+  "as_of": "2026-09",
+  "status": "CBS provisional figure for September 2026; the Worker refreshes this monthly from CBS OData and falls back to these values",
+  "unit": "EUR incl. VAT",
+  "gas_delivery_per_m3": 0.6618,
+  "gas_energy_tax_per_m3": 0.7268,
+  "electricity_delivery_per_kwh": 0.1487,
+  "electricity_energy_tax_per_kwh": 0.11085,
+  "source": "https://www.cbs.nl/nl-nl/cijfers/detail/85592NED",
+  "api": "https://opendata.cbs.nl/ODataApi/OData/85592NED",
+  "license": "CC-BY 4.0"
+}

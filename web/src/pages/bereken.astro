@@ -1,0 +1,92 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Bereken subsidie, besparing en terugverdientijd van een hybride warmtepomp" description="Check of je woning in aanmerking komt voor ISDE, hoeveel subsidie je krijgt en wat een hybride warmtepomp per jaar bespaart. Met open data van Kadaster, RVO en CBS.">
+  <h1>Wat levert een hybride warmtepomp jou op?</h1>
+  <p>Ook zonder offerte kun je hier rekenen. We gebruiken open data van het Kadaster, RVO en het CBS. Je adres gaat rechtstreeks naar het Kadaster en niet naar ons.</p>
+
+  <form id="woning" class="card">
+    <h2 style="margin-top:0">1. Je woning</h2>
+    <label>Postcode <input type="text" name="postcode" maxlength="7" placeholder="1234 AB" /></label>
+    <label>Huisnummer <input type="text" name="huisnummer" maxlength="8" /></label>
+    <button type="submit">Zoek bouwjaar op</button>
+    <div id="woning-uit" class="muted"></div>
+  </form>
+
+  <form id="reken" class="card">
+    <h2 style="margin-top:0">2. Subsidie en besparing</h2>
+    <label>Je gasverbruik per jaar in m³ (staat op je jaarafrekening) <input type="text" name="gas" inputmode="numeric" value="1200" /></label>
+    <label>Subsidiabel vermogen in kW (uit de RVO-meldcodelijst, vaak lager dan op de doos) <input type="text" name="kw" inputmode="decimal" value="4" /></label>
+    <label><input type="checkbox" name="aplus" checked /> Energielabel A+++</label>
+    <label>Prijs van de offerte inclusief btw, als je die al hebt <input type="text" name="prijs" inputmode="numeric" placeholder="bijv. 9000" /></label>
+    <label>Datum van aankoop <input type="text" name="datum" placeholder="JJJJ-MM-DD" /></label>
+    <button type="submit">Bereken</button>
+  </form>
+  <section id="reken-uit" hidden></section>
+
+  <p class="muted">Bronnen: <a href="https://www.pdok.nl/">PDOK/Kadaster BAG</a>, <a href="https://www.rvo.nl/subsidies-financiering/isde/woningeigenaren/warmtepomp">RVO ISDE</a>, <a href="https://www.cbs.nl/nl-nl/cijfers/detail/85592NED">CBS energietarieven</a>, <a href="https://solarmagazine.nl/nieuws-zonne-energie/i39474/hybride-warmtepomp-leidt-tot-75-procent-besparing-op-gas">demonstratieproject hybride warmtepompen</a>.</p>
+</Base>
+
+<script>
+  import { computeIsde } from "../../../src/core/isde";
+  import { computeSavings, seedTariffs, type Tariffs } from "../../../src/core/savings";
+  import { adviseHouse, type HouseFacts } from "../../../src/core/house";
+  import { priorBand } from "../../../src/core/fairness";
+
+  const api = import.meta.env.PUBLIC_API_BASE ?? "";
+  const eur = (x: number) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(x);
+  const num = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(/\./g, "").replace(",", "."));
+  let tariffs: Tariffs = seedTariffs();
+  fetch(`${api}/api/tarieven`).then((r) => (r.ok ? r.json() : null)).then((t) => { if (t) tariffs = t; }).catch(() => {});
+
+  function findKey(o: Record<string, unknown>, part: string): unknown {
+    const k = Object.keys(o).find((x) => x.toLowerCase().includes(part));
+    return k ? o[k] : undefined;
+  }
+
+  document.getElementById("woning")!.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const out = document.getElementById("woning-uit")!;
+    const f = new FormData(e.target as HTMLFormElement);
+    const q = `${String(f.get("postcode")).replace(/\s/g, "")} ${f.get("huisnummer")}`;
+    out.textContent = "Zoeken bij het Kadaster…";
+    try {
+      const loc = await (await fetch(`https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(q)}&fq=type:adres&rows=1`)).json();
+      const id = loc?.response?.docs?.[0]?.adresseerbaarobject_id;
+      if (!id) { out.textContent = "Adres niet gevonden."; return; }
+      const vbo = await (await fetch(`https://api.pdok.nl/kadaster/bag/ogc/v2/collections/verblijfsobject/items?identificatie=${id}&f=json`)).json();
+      const p = vbo?.features?.[0]?.properties ?? {};
+      const facts: HouseFacts = {
+        bouwjaar: Number(findKey(p, "bouwjaar")) || undefined,
+        oppervlakte_m2: Number(findKey(p, "oppervlakte")) || undefined,
+        gebruiksdoel: ([] as string[]).concat((findKey(p, "gebruiksdoel") as string | string[]) ?? []),
+      };
+      const advice = adviseHouse(facts);
+      out.innerHTML = [facts.oppervlakte_m2 ? `Oppervlakte ${facts.oppervlakte_m2} m².` : "", ...advice.notes].filter(Boolean).map((t) => `<p>${t}</p>`).join("") || "Geen bouwjaar gevonden.";
+    } catch { out.textContent = "Het Kadaster is nu niet bereikbaar. Vul je gegevens hieronder zelf in."; }
+  });
+
+  document.getElementById("reken")!.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target as HTMLFormElement);
+    const datum = /^\d{4}-\d{2}-\d{2}$/.test(String(f.get("datum"))) ? String(f.get("datum")) : new Date().toISOString().slice(0, 10);
+    const isde = computeIsde({ subsidiable_kw: num(f.get("kw")) || undefined, energy_label: f.get("aplus") ? "A+++" : undefined, purchase_date: datum });
+    const band = priorBand();
+    const prijs = num(f.get("prijs")) || band.median;
+    const net = Math.max(0, prijs - (isde.amount ?? 0));
+    const s = computeSavings({ gas_m3_per_year: num(f.get("gas")) || 1200, net_price: net, tariffs });
+    const out = document.getElementById("reken-uit")!;
+    out.innerHTML = `<div class="card">
+      <p>ISDE-subsidie: <strong>${isde.amount != null ? eur(isde.amount) : "onbekend"}</strong> (${isde.status}, regels ${isde.year}).</p>
+      ${isde.notes.map((n) => `<p class="muted">${n}</p>`).join("")}
+      <p>${f.get("prijs") ? "Jouw prijs" : `Gebruikelijke prijs (indicatie ${eur(band.p25)} tot ${eur(band.p75)})`}: ${eur(prijs)}, na subsidie <strong>${eur(net)}</strong>.</p>
+      <table><tr><th></th><th>Voorzichtig (60% minder gas)</th><th>Gemiddeld in praktijkproef (75%)</th></tr>
+      <tr><td>Minder gas</td><td>${s.low.gas_saved_m3} m³</td><td>${s.study.gas_saved_m3} m³</td></tr>
+      <tr><td>Extra stroom</td><td>${s.low.extra_kwh} kWh</td><td>${s.study.extra_kwh} kWh</td></tr>
+      <tr><td>Besparing per jaar</td><td>${eur(s.low.saving_per_year)}</td><td>${eur(s.study.saving_per_year)}</td></tr>
+      <tr><td>Terugverdientijd</td><td>${s.low.payback_years?.toLocaleString("nl-NL") ?? "-"} jaar</td><td>${s.study.payback_years?.toLocaleString("nl-NL") ?? "-"} jaar</td></tr></table>
+      <p class="muted">Met CBS-tarieven van ${s.tariffs.as_of}: gas ${eur(s.tariffs.gas_per_m3 * 100)} per 100 m³, stroom ${(s.tariffs.electricity_per_kwh * 100).toLocaleString("nl-NL", { maximumFractionDigits: 1 })} cent per kWh, inclusief energiebelasting en btw, zonder vaste kosten. We rekenen met een SCOP van ${s.assumptions.scop}.</p>
+      <p><a class="btn" href="/">Heb je een offerte? Check hem hier</a></p></div>`;
+    out.hidden = false;
+  });
+</script>

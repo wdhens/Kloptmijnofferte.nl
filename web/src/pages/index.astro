@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+const api = import.meta.env.PUBLIC_API_BASE ?? "";
+---
+<Base title="Klopt mijn offerte? Check je offerte voor een hybride warmtepomp" description="Upload je offerte voor een hybride warmtepomp en zie binnen 2 minuten of de prijs eerlijk is, wat er ontbreekt en hoeveel ISDE-subsidie je krijgt. Onafhankelijk en anoniem.">
+  <h1 data-copy="h1">Weet binnen 2 minuten of je offerte eerlijk is</h1>
+  <p>Upload je offerte voor een hybride warmtepomp. Je ziet waar de prijs zit ten opzichte van de middenprijs, welke vragen je de installateur nog kunt stellen, en hoeveel ISDE-subsidie je kunt krijgen.</p>
+
+  <form id="check" class="card" data-api={api}>
+    <label>Je offerte (pdf, jpg of png, max. 10 MB)<br /><input type="file" name="file" accept="application/pdf,image/jpeg,image/png" required /></label>
+    <label>Postcode, alleen de 4 cijfers (als die niet op de offerte staat)<br /><input type="text" name="pc4" inputmode="numeric" pattern="[1-9][0-9]{3}" maxlength="4" /></label>
+    <label><input type="checkbox" name="consent_reuse" /> Mijn offerte mag, zonder naam, adres of contactgegevens, meetellen in de prijsoverzichten. Zo help je de volgende huiseigenaar. Je kunt dit 30 dagen lang intrekken.</label>
+    <p class="muted">We lezen je offerte uit en bewaren het bestand niet. Persoonsgegevens halen we eruit voordat we iets opslaan. Lees de <a href="/privacy">privacyuitleg</a>.</p>
+    <button type="submit" data-copy="cta">Check mijn offerte</button>
+  </form>
+
+  <section id="result" hidden></section>
+  <p>Nog geen offerte? <a href="/bereken">Bereken eerst je subsidie, besparing en terugverdientijd</a>.</p>
+
+  <h2>Hoe het werkt</h2>
+  <ol>
+    <li>Je uploadt je offerte. Wij lezen de bedragen en onderdelen uit.</li>
+    <li>We vergelijken de prijs met andere offertes. Zolang we nog weinig offertes hebben, gebruiken we openbare prijsindicaties en zeggen we dat erbij.</li>
+    <li>Je krijgt de uitkomst, vragen voor je installateur en een subsidieberekening.</li>
+  </ol>
+  <script src="/check.js" is:inline></script>
+</Base>

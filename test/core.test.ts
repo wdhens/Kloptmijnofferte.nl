@@ -124,3 +124,63 @@ describe("parser helpers", () => {
   });
   it("prices a Haiku call", () => expect(costUsd("claude-haiku-5-5", { input_tokens: 10000, output_tokens: 2000 })).toBeCloseTo(0.002));
 });
+
+import { computeSavings, tariffsFromCbs, seedTariffs } from "../src/core/savings";
+import { adviseHouse } from "../src/core/house";
+
+describe("savings", () => {
+  it("computes savings and payback with CBS Sept 2026 tariffs", () => {
+    const r = computeSavings({ gas_m3_per_year: 1200, net_price: 6875 });
+    expect(seedTariffs().gas_per_m3).toBeCloseTo(1.3886, 4);
+    expect(r.study.gas_saved_m3).toBe(900);
+    expect(r.study.extra_kwh).toBe(2035);
+    expect(r.study.saving_per_year).toBe(722);
+    expect(r.study.payback_years).toBe(9.5);
+    expect(r.low.saving_per_year).toBeLessThan(r.study.saving_per_year);
+  });
+  it("reads CBS OData columns by title", () => {
+    const props = [
+      { ID: 1, Key: "", Title: "Aardgas" }, { ID: 2, Key: "G1", Title: "Variabel leveringstarief contractprijs", ParentID: 1 },
+      { ID: 3, Key: "G2", Title: "Energiebelasting", ParentID: 1 }, { ID: 4, Key: "", Title: "Elektriciteit" },
+      { ID: 5, Key: "E1", Title: "Variabel leveringstarief contractprijs", ParentID: 4 }, { ID: 6, Key: "E2", Title: "Energiebelasting", ParentID: 4 },
+    ];
+    const t = tariffsFromCbs(props, { G1: 0.7, G2: 0.7, E1: 0.15, E2: 0.11 }, "2026-10");
+    expect(t).toMatchObject({ gas_per_m3: 1.4, as_of: "2026-10" });
+    expect(t!.electricity_per_kwh).toBeCloseTo(0.26);
+    expect(tariffsFromCbs(props, {}, "x")).toBeNull();
+  });
+});
+
+describe("house", () => {
+  it("checks the ISDE build-year rule", () => {
+    expect(adviseHouse({ bouwjaar: 1998 }).isde_build_year_ok).toBe(true);
+    expect(adviseHouse({ bouwjaar: 2020 }).isde_build_year_ok).toBe(false);
+    expect(adviseHouse({}).isde_build_year_ok).toBeNull();
+  });
+});
+
+import { brandLint, decide, dropOff, EXPERIMENTS, probBBeatsA } from "../src/core/experiments";
+
+describe("experiments", () => {
+  it("all human variants pass the brand lint", () => {
+    for (const e of EXPERIMENTS) for (const v of e.variants) for (const t of Object.values(v.copy)) expect(brandLint(t)).toEqual([]);
+  });
+  it("rejects off-brand copy", () => {
+    expect(brandLint("Gratis offertes, check uw offerte nu!").length).toBeGreaterThan(1);
+  });
+  it("computes win probability", () => {
+    expect(probBBeatsA({ id: "A", views: 1000, conversions: 100 }, { id: "B", views: 1000, conversions: 150 })).toBeGreaterThan(0.99);
+    expect(probBBeatsA({ id: "A", views: 1000, conversions: 100 }, { id: "B", views: 1000, conversions: 100 })).toBeCloseTo(0.5, 1);
+  });
+  it("waits for enough data and then promotes", () => {
+    expect(decide([{ id: "A", views: 100, conversions: 10 }, { id: "B", views: 100, conversions: 30 }]).winner).toBeNull();
+    expect(decide([{ id: "A", views: 1000, conversions: 100 }, { id: "B", views: 1000, conversions: 150 }]).winner).toBe("B");
+    expect(decide([{ id: "A", views: 1000, conversions: 150 }, { id: "B", views: 1000, conversions: 100 }]).winner).toBe("A");
+  });
+  it("computes funnel drop-off", () => {
+    const d = dropOff([{ step: "landing", count: 1000 }, { step: "upload_started", count: 200 }, { step: "upload_finished", count: 150 }]);
+    expect(d[0].conversion).toBeCloseTo(0.2);
+    expect(d[1].conversion).toBeCloseTo(0.75);
+    expect(d[2].conversion).toBe(0);
+  });
+});
