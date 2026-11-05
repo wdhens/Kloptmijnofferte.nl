@@ -1,0 +1,18 @@
+{
+  "as_of": "2026-11-05",
+  "status": "prior from comparison sites and one installer brochure; replace with own data per cell when k>=5",
+  "unit": "EUR incl. 21% VAT",
+  "total_before_subsidy": [7000, 11000],
+  "installation_total": [2500, 4500],
+  "components": {
+    "labour": [1950, 2650], "connection_kit_materials": [1450, 1800], "hybrid_materials": [750, 1000],
+    "hydraulic_balancing": [950, 950], "electrical_group": [550, 975], "flue_replacement": [345, 1000],
+    "work_at_height": [250, 500], "concrete_drilling_per_hole": [150, 250], "thermostat": [145, 250], "extra_pipe_per_m": [40, 65]
+  },
+  "installer_prices_after_subsidy": {
+    "Daikin hybrid all-in 4-8 kW": [4600, 5750], "Remeha Elga Ace / Weheat Flint P40 6 kW": [4840, 7500],
+    "Intergas hybrid / Remeha Tzerra 6-8 kW": [5000, 6500], "DeWarmte Pomp AO (from)": [3985, null]
+  },
+  "validation_hard_bounds_total_incl_vat": [3000, 20000],
+  "sources": ["https://trustoo.nl/kosten/warmtepomp-installateur-kosten/", "https://a.storyblok.com/f/258866/x/571ecaa08f/dewarmte-hybride-warmtepomp-brochure-okt-26.pdf"]
+}

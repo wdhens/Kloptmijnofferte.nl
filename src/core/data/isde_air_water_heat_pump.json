@@ -1,0 +1,13 @@
+{
+  "as_of": "2026-11-05",
+  "applies_to": "first air-water heat pump incl. hybrid, owner-occupier (ISDE)",
+  "unit": "EUR",
+  "rules": [
+    {"year": 2026, "valid_for": "purchase/quote signed 2026-01-01..2026-12-31", "base": 1025, "per_kw_subsidiable": 225, "label_bonus_A+++": 200, "smart_bonus": 0, "second_pump": {"base": 0, "per_kw": 225, "label_bonus": 0}},
+    {"year": 2027, "status": "announced, not final; hybrid treatment unconfirmed", "valid_for": "purchase from 2027-01-01", "base": 1025, "per_kw_subsidiable": 120, "label_bonus_A+++": 250, "smart_bonus": 200, "smart_protocols": ["EEBus", "S2", "Matter"], "transition": "bought on/before 2026-12-31 and installed in 2027 keeps 2026 rate; proof: signed quote or order confirmation"}
+  ],
+  "exclusions": ["split unit with refrigerant charge < 3 kg and GWP > 750 (from 2026)"],
+  "conditions": ["model on RVO meldcode list", "installed by a company", "home built before 2019-01-01", "apply within 24 months of installation", "invoice shows meldcode"],
+  "note": "kW = subsidiable kW from the RVO meldcode list, may differ from marketed kW (e.g. KA21789 Quatt Hybrid 6kW = 4 kW, EUR 2125 in 2026)",
+  "sources": ["https://www.rvo.nl/subsidies-financiering/isde/isde-wat-wijzigt-er-2026", "https://www.rvo.nl/subsidies-financiering/isde/isde-wat-wijzigt-er-2027", "https://www.rvo.nl/meldcodes-warmtepompen/ka21789-quatt-quatt-hybrid-6kw"]
+}
