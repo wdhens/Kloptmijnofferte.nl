@@ -3,6 +3,15 @@
 // Facts about ISDE come from src/core/data/isde_air_water_heat_pump.json (Data and quality).
 // Learned entries are added at runtime from D1 (table kb_learned) by the weekly support loop.
 
+import isde from "../data/isde_air_water_heat_pump.json";
+import { computeIsde } from "../isde";
+
+const eurNl = (x: number) => `€${x.toLocaleString("nl-NL")}`;
+const r26 = isde.rules.find((r) => r.year === 2026)!;
+const r27 = isde.rules.find((r) => r.year === 2027)!;
+// The worked example uses the RVO meldcode KA21789 (sold as 6 kW, listed as 4 kW).
+const example26 = computeIsde({ subsidiable_kw: 4, energy_label: "A+++", purchase_date: "2026-06-01" }).amount!;
+
 export type Topic = "check" | "privacy" | "prijzen" | "subsidie" | "warmtepomp" | "over_ons" | "contact";
 
 export interface KbEntry {
@@ -110,14 +119,14 @@ export const KB: KbEntry[] = [
   {
     id: "isde-hoeveel", topic: "subsidie",
     question: "Hoeveel ISDE-subsidie krijg ik voor een hybride warmtepomp?",
-    answer: "Koop je in 2026, dan is het €1.025 plus €225 per kW, plus €200 als de warmtepomp energielabel A+++ heeft. Het gaat om het vermogen uit de meldcodelijst van RVO, dat kan lager zijn dan het vermogen in de folder. Voorbeeld: een model dat als 6 kW wordt verkocht, staat op de lijst als 4 kW en krijgt dan €2.125. Onze check rekent het voor je uit.",
+    answer: `Koop je in 2026, dan is het ${eurNl(r26.base)} plus ${eurNl(r26.per_kw_subsidiable)} per kW, plus ${eurNl(r26["label_bonus_A+++"])} als de warmtepomp energielabel A+++ heeft. Het gaat om het vermogen uit de meldcodelijst van RVO, dat kan lager zijn dan het vermogen in de folder. Voorbeeld: een model dat als 6 kW wordt verkocht, staat op de lijst als 4 kW en krijgt dan ${eurNl(example26)}. Onze check rekent het voor je uit.`,
     keywords: ["isde", "subsidie", "hoeveel", "bedrag", "krijg", "terug", "rvo", "kw", "a+++"],
     links: [{ label: "Bereken je subsidie", href: "/bereken" }, { label: "RVO: ISDE in 2026", href: "https://www.rvo.nl/subsidies-financiering/isde/isde-wat-wijzigt-er-2026" }],
   },
   {
     id: "isde-2027", topic: "subsidie",
     question: "Verandert de subsidie in 2027?",
-    answer: "Ja, dat is aangekondigd maar nog niet definitief. Het bedrag per kW gaat naar €120. De bonus voor A+++ wordt €250 en er komt €200 bij voor een slimme aansturing. Teken je uiterlijk 31 december 2026 en wordt de warmtepomp in 2027 geplaatst? Dan geldt het bedrag van 2026. Bewaar de getekende offerte of opdrachtbevestiging als bewijs.",
+    answer: `Ja, dat is aangekondigd maar nog niet definitief. Het bedrag per kW gaat naar ${eurNl(r27.per_kw_subsidiable)}. De bonus voor A+++ wordt ${eurNl(r27["label_bonus_A+++"])} en er komt ${eurNl(r27.smart_bonus)} bij voor een slimme aansturing. Teken je uiterlijk 31 december 2026 en wordt de warmtepomp in 2027 geplaatst? Dan geldt het bedrag van 2026. Bewaar de getekende offerte of opdrachtbevestiging als bewijs.`,
     keywords: ["2027", "volgend jaar", "verandert", "lager", "minder", "wachten", "wijziging", "overgang"],
     links: [{ label: "RVO: ISDE in 2027", href: "https://www.rvo.nl/subsidies-financiering/isde/isde-wat-wijzigt-er-2027" }],
   },

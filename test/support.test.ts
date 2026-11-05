@@ -98,3 +98,14 @@ describe("support: answers", () => {
     expect(a.answer).not.toContain("gegarandeerd");
   });
 });
+
+import { describe as d2, it as i2, expect as e2 } from "vitest";
+import * as kbMod from "../src/core/support/kb";
+d2("kb ISDE figures come from the shared rules file", () => {
+  i2("renders the 2026 and 2027 amounts", () => {
+    const all = JSON.stringify(kbMod);
+    e2(all).toContain("€1.025 plus €225 per kW");
+    e2(all).toContain("krijgt dan €2.125");
+    e2(all).toContain("gaat naar €120");
+  });
+});
