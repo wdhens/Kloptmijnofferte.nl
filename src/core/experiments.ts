@@ -15,16 +15,51 @@ export const EXPERIMENTS: Experiment[] = [
     variants: [
       { id: "A", source: "human", copy: { h1: "Weet binnen 2 minuten of je offerte eerlijk is", cta: "Check mijn offerte" } },
       { id: "B", source: "human", copy: { h1: "Klopt de prijs van je warmtepompofferte?", cta: "Offerte checken" } },
+      { id: "C", source: "human", copy: { h1: "Een tweede mening op je offerte, zonder installateurs", cta: "Tweede mening krijgen" } },
+      { id: "D", source: "human", copy: { h1: "Klopt je offerte, en hoeveel subsidie krijg je?", cta: "Offerte en subsidie checken" } },
+      { id: "E", source: "human", copy: { h1: "Betaal je te veel voor je hybride warmtepomp?", cta: "Vergelijk mijn offerte" } },
+      // Held until own data reaches k>=5, since the claim "echte offertes" is not true before that:
+      // { id: "F", source: "human", copy: { h1: "Vergelijk je offerte met echte offertes van andere huiseigenaren", cta: "Offerte uploaden" } },
     ],
   },
 ];
 
-// Brand rules from Growth (brand-and-tone): je not u, no "!" , no fear or urgency, banned phrases.
-const BANNED = [/\bu\b/i, /\buw\b/i, /!/, /gratis offertes/i, /goedkoopste/i, /gegarandeerd/i, /100% veilig/i, /nu of nooit/i, /laatste kans/i, /snel(?:\s+)?zijn/i, /beperkt/i];
-export function brandLint(text: string): string[] {
+// Brand rules from Growth (brand-and-tone, 2026-11-05).
+const BANNED: RegExp[] = [
+  /(^|[^\p{L}])(u|uw)(?![\p{L}])/iu, /!/, /gratis offertes/i, /goedkoopste/i, /gegarandeerd/i, /100% veilig/i,
+  /knaller/i, /\bdeals?\b/i, /scherpste prijs/i, /beste prijs/i, /laatste kans/i, /op\s*=\s*op/i, /nu of nooit/i,
+  /alleen vandaag/i, /\bsnel/i, /duizenden/i, /\b\d[\d.]*\+?\s*(huiseigenaren|klanten|gebruikers|mensen)/i,
+  /bespaar\w*[^.]*(€|\beuro\b|\d)/i, /beperkt/i,
+];
+export const BRAND_NAMES = ["homedeal", "werkspot", "trustoo", "daikin", "remeha", "weheat", "intergas", "dewarmte", "quatt", "vaillant", "nefit", "itho", "atag", "bosch", "mitsubishi", "panasonic"];
+const CAPS_ALLOWED = new Set(["ISDE", "RVO", "CBS", "BTW"]);
+
+export function brandLint(text: string, source: Variant["source"] = "human"): string[] {
   const problems = BANNED.filter((r) => r.test(text)).map((r) => `verboden patroon ${r}`);
+  const lower = text.toLowerCase();
+  for (const b of BRAND_NAMES) if (lower.includes(b)) problems.push(`merknaam ${b}`);
+  for (const w of text.match(/\b\p{Lu}{3,}\b/gu) ?? []) if (!CAPS_ALLOWED.has(w)) problems.push(`hoofdletters ${w}`);
+  if (source === "model" && /€|\beuro\b|\d/i.test(text)) problems.push("model mag geen bedragen of getallen noemen");
   if (text.split(/\s+/).length > 14) problems.push("langer dan 14 woorden");
   return problems;
+}
+
+/** Seconds claimed in copy like "binnen 2 minuten", or null. */
+export function claimedSeconds(text: string): number | null {
+  const m = text.match(/(\d+)\s*(minuut|minuten|seconden)/i);
+  return m ? Number(m[1]) * (m[2].toLowerCase().startsWith("sec") ? 1 : 60) : null;
+}
+
+export const DURATION_BUCKETS_S = [15, 30, 45, 60, 90, 120, 180, 300, 600];
+export const bucketOf = (s: number) => DURATION_BUCKETS_S.find((b) => s <= b) ?? 9999;
+/** Median from bucket counts (upper edge of the bucket holding the middle value). */
+export function medianFromBuckets(rows: { bucket: number; count: number }[]): number | null {
+  const sorted = [...rows].sort((a, b) => a.bucket - b.bucket);
+  const total = sorted.reduce((s, r) => s + r.count, 0);
+  if (!total) return null;
+  let acc = 0;
+  for (const r of sorted) { acc += r.count; if (acc >= total / 2) return r.bucket; }
+  return null;
 }
 
 /** Deterministic pick from a per-page-view random number. */

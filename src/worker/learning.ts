@@ -3,7 +3,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { EXPERIMENTS, FUNNEL, brandLint, decide, dropOff, type Step } from "../core/experiments";
+import { EXPERIMENTS, FUNNEL, brandLint, bucketOf, claimedSeconds, decide, dropOff, medianFromBuckets, type Step } from "../core/experiments";
 import { MODELS, costUsd } from "../core/parse";
 import type { Env } from "./index";
 
@@ -12,12 +12,15 @@ const BOT = /bot|crawl|spider|preview|headless|lighthouse/i;
 
 export async function recordEvent(req: Request, env: Env) {
   if (BOT.test(req.headers.get("user-agent") ?? "")) return;
-  const b = (await req.json().catch(() => ({}))) as { step?: string; path?: string; exp?: string; variant?: string };
+  const b = (await req.json().catch(() => ({}))) as { step?: string; path?: string; exp?: string; variant?: string; secs?: number };
   if (!b.step || !STEPS.has(b.step)) return;
   const path = (b.path ?? "/").slice(0, 64), exp = (b.exp ?? "").slice(0, 40), variant = (b.variant ?? "").slice(0, 8);
   await env.DB.prepare(
     "INSERT INTO events(day, path, step, exp, variant, count) VALUES(?, ?, ?, ?, ?, 1) ON CONFLICT DO UPDATE SET count = count + 1",
   ).bind(new Date().toISOString().slice(0, 10), path, b.step, exp, variant).run();
+  if (b.step === "report_viewed" && typeof b.secs === "number" && b.secs > 0 && b.secs < 3600)
+    await env.DB.prepare("INSERT INTO durations(day, bucket, count) VALUES(?, ?, 1) ON CONFLICT DO UPDATE SET count = count + 1")
+      .bind(new Date().toISOString().slice(0, 10), bucketOf(b.secs)).run();
 }
 
 async function seedVariants(env: Env) {
@@ -60,7 +63,7 @@ async function propose(env: Env, champion: Record<string, string>, funnel: unkno
     max_tokens: 2000,
     output_config: { effort: "medium", format: zodOutputFormat(Proposal) },
     system: `Je schrijft één nieuwe testvariant voor de kop (h1) en knop (cta) van klopmijnofferte.nl, een onafhankelijke check voor offertes van hybride warmtepompen.
-Huisstijl: "je", nooit "u". Korte zinnen, B1. Cijfers boven bijvoeglijke naamwoorden. Eerlijk over onzekerheid. Geen angst, geen urgentie, geen uitroeptekens. Nooit "gratis offertes", "goedkoopste", "gegarandeerd", "100% veilig". Kop max. 12 woorden, knop max. 4 woorden.`,
+Huisstijl: "je", nooit "u". Korte zinnen, B1. Cijfers boven bijvoeglijke naamwoorden. Eerlijk over onzekerheid. Geen angst, geen urgentie, geen uitroeptekens. Nooit "gratis offertes", "goedkoopste", "gegarandeerd", "100% veilig". Noem nooit een bedrag, percentage, aantal of subsidiebedrag, en geen merk- of bedrijfsnamen. Geen hoofdletterwoorden. Kop max. 12 woorden, knop max. 4 woorden.`,
     messages: [{ role: "user", content: `Huidige winnaar: ${JSON.stringify(champion)}\nEerder getest: ${history.join(" | ")}\nFunnel afgelopen 28 dagen: ${JSON.stringify(funnel)}\nBedenk één duidelijk andere variant die meer mensen laat uploaden.` }],
   });
   return { proposal: res.stop_reason === "refusal" ? null : res.parsed_output, cost: costUsd(MODELS.small, res.usage) };
@@ -73,10 +76,18 @@ export async function weeklyLearning(env: Env) {
   const now = new Date().toISOString();
   const { results: steps } = await env.DB.prepare("SELECT step, SUM(count) AS count FROM events WHERE day >= ? AND path = '/' GROUP BY step").bind(since).all<{ step: Step; count: number }>();
   const funnel = dropOff(steps);
-  const report: Record<string, unknown> = { created_at: now, window_days: 28, funnel, experiments: [] as unknown[] };
+  const { results: dur } = await env.DB.prepare("SELECT bucket, SUM(count) AS count FROM durations WHERE day >= ? GROUP BY bucket").bind(since).all<{ bucket: number; count: number }>();
+  const median_secs = medianFromBuckets(dur);
+  const time_claim_flags: unknown[] = [];
+  const report: Record<string, unknown> = { created_at: now, window_days: 28, funnel, median_upload_to_report_secs: median_secs, time_claim_flags, experiments: [] as unknown[] };
 
   for (const e of EXPERIMENTS) {
     const { results: rows } = await env.DB.prepare("SELECT exp, id, copy, source, status FROM variants WHERE exp = ?").bind(e.id).all<VRow>();
+    for (const r of rows.filter((x) => x.status !== "retired")) {
+      const claim = claimedSeconds(JSON.parse(r.copy).h1 ?? "");
+      if (claim != null && median_secs != null && median_secs > claim)
+        time_claim_flags.push({ exp: e.id, variant: r.id, claimed_secs: claim, median_secs, message: "Tijdsclaim is langzamer dan gemeten; pas de tekst of de snelheid aan." });
+    }
     const inPlay = rows.filter((r) => r.status !== "retired").sort((a, b) => (a.status === "champion" ? -1 : b.status === "champion" ? 1 : 0));
     const stats = await armStats(env, e.id, e.goal, since);
     const arms = inPlay.map((r) => stats(r.id));
@@ -90,7 +101,7 @@ export async function weeklyLearning(env: Env) {
       const { proposal, cost } = await propose(env, champion, funnel, rows.map((r) => JSON.parse(r.copy).h1));
       entry.proposal_cost_usd = cost;
       if (proposal) {
-        const problems = [...brandLint(proposal.h1), ...brandLint(proposal.cta)];
+        const problems = [...brandLint(proposal.h1, "model"), ...brandLint(proposal.cta, "model")];
         entry.proposal = { ...proposal, problems };
         if (problems.length === 0 && env.AUTO_SHIP_VARIANTS === "true") {
           const id = `M${rows.length + 1}`;

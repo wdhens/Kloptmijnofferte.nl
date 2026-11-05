@@ -159,7 +159,7 @@ describe("house", () => {
   });
 });
 
-import { brandLint, decide, dropOff, EXPERIMENTS, probBBeatsA } from "../src/core/experiments";
+import { brandLint, claimedSeconds, decide, dropOff, EXPERIMENTS, medianFromBuckets, probBBeatsA } from "../src/core/experiments";
 
 describe("experiments", () => {
   it("all human variants pass the brand lint", () => {
@@ -167,6 +167,21 @@ describe("experiments", () => {
   });
   it("rejects off-brand copy", () => {
     expect(brandLint("Gratis offertes, check uw offerte nu!").length).toBeGreaterThan(1);
+    for (const t of ["Check u offerte", "U betaalt te veel", "Scherpste prijs", "Al 5000 huiseigenaren gingen je voor", "Bespaar €800 per jaar", "Beter dan Werkspot", "GRATIS check", "Snel klaar"])
+      expect(brandLint(t), t).not.toEqual([]);
+  });
+  it("does not trip on nu, uur or allowed abbreviations", () => {
+    expect(brandLint("Check nu je offerte, klaar binnen een uur")).toEqual([]);
+    expect(brandLint("Hoeveel ISDE krijg je?")).toEqual([]);
+  });
+  it("forbids numbers in model copy only", () => {
+    expect(brandLint("Weet binnen 2 minuten of je offerte eerlijk is")).toEqual([]);
+    expect(brandLint("Weet binnen 2 minuten of je offerte eerlijk is", "model")).not.toEqual([]);
+  });
+  it("checks time claims against measured medians", () => {
+    expect(claimedSeconds("Weet binnen 2 minuten of je offerte eerlijk is")).toBe(120);
+    expect(claimedSeconds("Klopt je offerte?")).toBeNull();
+    expect(medianFromBuckets([{ bucket: 30, count: 2 }, { bucket: 60, count: 5 }, { bucket: 180, count: 3 }])).toBe(60);
   });
   it("computes win probability", () => {
     expect(probBBeatsA({ id: "A", views: 1000, conversions: 100 }, { id: "B", views: 1000, conversions: 150 })).toBeGreaterThan(0.99);

@@ -4,8 +4,9 @@
   const api = form.dataset.api || "";
   const eur = (x) => new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(x);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const track = (s) => window.kmo && window.kmo.track(s);
-  form.querySelector('input[type=file]').addEventListener("change", () => track("upload_started"), { once: true });
+  const track = (s, extra) => window.kmo && window.kmo.track(s, extra);
+  let startedAt = 0;
+  form.querySelector('input[type=file]').addEventListener("change", () => { startedAt = Date.now(); track("upload_started"); }, { once: true });
   const label = { laag: "Laag", gemiddeld: "Rond de middenprijs", hoog: "Hoog" };
   const color = { laag: "var(--low)", gemiddeld: "var(--mid)", hoog: "var(--high)" };
 
@@ -37,7 +38,7 @@
       e.target.innerHTML = res.ok ? "<p>Je bent aangemeld.</p>" : "<p>Dat lukte niet. Controleer je e-mailadres.</p>";
     });
     out.scrollIntoView({ behavior: "smooth" });
-    new IntersectionObserver((es, o) => { if (es.some((x) => x.isIntersecting)) { track("report_viewed"); o.disconnect(); } }, { threshold: 0.5 }).observe(out.firstElementChild);
+    new IntersectionObserver((es, o) => { if (es.some((x) => x.isIntersecting)) { track("report_viewed", startedAt ? { secs: Math.round((Date.now() - startedAt) / 1000) } : {}); o.disconnect(); } }, { threshold: 0.5 }).observe(out.firstElementChild);
   }
 
   form.addEventListener("submit", async (e) => {

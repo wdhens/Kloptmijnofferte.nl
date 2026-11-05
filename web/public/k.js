@@ -3,8 +3,8 @@
   const api = document.documentElement.dataset.api || "";
   const path = location.pathname;
   const state = { exp: "", variant: "" };
-  const send = (step) => {
-    const body = JSON.stringify({ step, path, exp: state.exp, variant: state.variant });
+  const send = (step, extra) => {
+    const body = JSON.stringify({ step, path, exp: state.exp, variant: state.variant, ...(extra || {}) });
     if (!(navigator.sendBeacon && navigator.sendBeacon(`${api}/api/e`, new Blob([body], { type: "text/plain" }))))
       fetch(`${api}/api/e`, { method: "POST", body, keepalive: true }).catch(() => {});
   };
