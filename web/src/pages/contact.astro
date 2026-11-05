@@ -1,10 +1,10 @@
 ---
 import Base from "../layouts/Base.astro";
 ---
-<Base title="Contact met kloptmijnofferte.nl" description="Stel je vraag over je offerte, de ISDE-subsidie of privacy. Vaak heb je binnen een paar minuten antwoord. Bij een klacht of privacyverzoek kijkt een mens mee.">
+<Base title="Contact met prijstoets.nl" description="Stel je vraag over je offerte, de ISDE-subsidie of privacy. Vaak heb je binnen een paar minuten antwoord. Bij een klacht of privacyverzoek kijkt een mens mee.">
   <h1>Contact</h1>
   <p>Vaak staat je antwoord al bij de <a href="/veelgestelde-vragen">veelgestelde vragen</a>, of vraag het <a href="#" data-open-chat>in de chat</a>.</p>
-  <p>Liever per mail? Vul het formulier in of mail naar <a href="mailto:hallo@kloptmijnofferte.nl">hallo@kloptmijnofferte.nl</a>. Een vraag die we uit onze uitleg kunnen beantwoorden, krijg je meestal binnen een paar minuten terug, opgesteld door onze AI-assistent. Bij een klacht, een privacyverzoek of een vraag over een installateur kijkt een mens mee. Dan reageren we binnen 5 werkdagen, bij een privacyverzoek binnen een maand.</p>
+  <p>Liever per mail? Vul het formulier in of mail naar <a href="mailto:hallo@prijstoets.nl">hallo@prijstoets.nl</a>. Een vraag die we uit onze uitleg kunnen beantwoorden, krijg je meestal binnen een paar minuten terug, opgesteld door onze AI-assistent. Bij een klacht, een privacyverzoek of een vraag over een installateur kijkt een mens mee. Dan reageren we binnen 5 werkdagen, bij een privacyverzoek binnen een maand.</p>
 
   <form id="contact" class="card">
     <label>Je e-mailadres<br /><input type="email" name="email" required autocomplete="email" /></label>
@@ -41,7 +41,7 @@ import Base from "../layouts/Base.astro";
           f.hidden = true;
           out.textContent = d.mode === "answered" ? `${d.answer}\n\nWe hebben dit antwoord ook naar je gemaild. Klopt er iets niet? Antwoord dan op die mail, dan kijkt een mens mee.` : d.message;
           out.style.whiteSpace = "pre-wrap";
-        } catch { out.hidden = false; out.textContent = "Dat lukte niet. Mail ons op hallo@kloptmijnofferte.nl."; b.disabled = false; }
+        } catch { out.hidden = false; out.textContent = "Dat lukte niet. Mail ons op hallo@prijstoets.nl."; b.disabled = false; }
       });
     })();
   </script>

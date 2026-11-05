@@ -28,7 +28,7 @@ export const KB: KbEntry[] = [
   // ---- de check ---------------------------------------------------------------
   {
     id: "check-wat", topic: "check",
-    question: "Wat doet kloptmijnofferte.nl?",
+    question: "Wat doet prijstoets.nl?",
     answer: "Je uploadt je offerte voor een hybride warmtepomp. Wij lezen de bedragen uit en laten zien waar je prijs zit ten opzichte van de middenprijs. Je krijgt ook vragen die je je installateur kunt stellen en een berekening van je ISDE-subsidie. We zijn een tweede mening, geen installateur.",
     keywords: ["wat", "doen", "jullie", "werkt", "hoe", "check", "offerte", "tweede mening"],
     links: [{ label: "Check je offerte", href: "/" }],

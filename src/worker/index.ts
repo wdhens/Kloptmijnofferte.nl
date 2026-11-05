@@ -24,7 +24,7 @@ export interface Env {
   REPORT_TOKEN?: string;
   REPORT_WEBHOOK_URL?: string;
   // Support function
-  SUPPORT_FROM: string;            // sender address, e.g. hallo@kloptmijnofferte.nl (Brevo-verified)
+  SUPPORT_FROM: string;            // sender address, e.g. hallo@prijstoets.nl (Brevo-verified)
   SUPPORT_DAILY_CAP_USD?: string;  // model spend cap for chat and mail answers
   AUTO_SHIP_FAQ?: string;          // "true": learned FAQ entries go live after the checks
   BREVO_API_KEY?: string;          // secret

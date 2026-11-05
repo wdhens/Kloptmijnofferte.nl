@@ -8,7 +8,7 @@ DAILY_CAP_USD = "2"
 CONSENT_VERSION = "2026-11-05"
 ALLOWED_ORIGIN = "https://kloptmijnofferte.nl"
 AUTO_SHIP_VARIANTS = "true"
-SUPPORT_FROM = "hallo@kloptmijnofferte.nl"
+SUPPORT_FROM = "hallo@prijstoets.nl"
 SUPPORT_DAILY_CAP_USD = "1"
 AUTO_SHIP_FAQ = "true"
 
