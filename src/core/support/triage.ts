@@ -67,5 +67,5 @@ export function isAutomatedMail(from: string, headers: Record<string, string>): 
   return false;
 }
 
-/** Support reference in mail subjects, e.g. "[KMO-7Q4K2M]". A reply that carries one always goes to a human. */
-export const REF_RE = /\[KMO-([A-HJ-NP-Z2-9]{6})\]/;
+/** Support reference in mail subjects, e.g. "[PT-7Q4K2M]". A reply that carries one always goes to a human. */
+export const REF_RE = /\[PT-([A-HJ-NP-Z2-9]{6})\]/;

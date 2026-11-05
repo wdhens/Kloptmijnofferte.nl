@@ -57,7 +57,7 @@ describe("support: triage", () => {
     expect(isAutomatedMail("noreply@x.nl", {})).toBe(true);
     expect(isAutomatedMail("piet@x.nl", { "auto-submitted": "auto-replied" })).toBe(true);
     expect(isAutomatedMail("piet@x.nl", {})).toBe(false);
-    expect("Re: vraag [KMO-7Q4K2M]").toMatch(REF_RE);
+    expect("Re: vraag [PT-7Q4K2M]").toMatch(REF_RE);
   });
 });
 

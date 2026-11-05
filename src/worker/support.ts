@@ -13,7 +13,7 @@ import type { Env } from "./index";
 const today = () => new Date().toISOString().slice(0, 10);
 const hex = (b: ArrayBuffer) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
 const sha256 = async (s: string) => hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
-const newRef = () => "KMO-" + [...crypto.getRandomValues(new Uint8Array(6))].map((x) => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x % 31]).join("");
+const newRef = () => "PT-" + [...crypto.getRandomValues(new Uint8Array(6))].map((x) => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[x % 31]).join("");
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_AUTO_REPLIES_PER_SENDER_PER_DAY = 3;
 const AUTO_ANSWER_MIN_CONFIDENCE = 0.7;
