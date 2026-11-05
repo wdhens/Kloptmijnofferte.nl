@@ -40,7 +40,7 @@ const Out = z.object({
 });
 
 export function systemPrompt(entries: KbEntry[], channel: "chat" | "email"): string {
-  return `Je bent de assistent van kloptmijnofferte.nl, een onafhankelijke check voor offertes van hybride warmtepompen voor Nederlandse huiseigenaren.
+  return `Je bent de assistent van prijstoets.nl, een onafhankelijke check voor offertes van hybride warmtepompen voor Nederlandse huiseigenaren.
 Je beantwoordt vragen ${channel === "chat" ? "in de chat op de website" : "per e-mail"}, alleen op basis van de KENNISBANK hieronder.
 
 Regels:
@@ -172,7 +172,7 @@ export const Draft = z.object({
 });
 
 export function draftPrompt(entries: KbEntry[]): string {
-  return `Je verbetert de veelgestelde vragen van kloptmijnofferte.nl. Je krijgt onderwerpen waar de chat de afgelopen weken geen goed antwoord op had, met hoe vaak ze voorkwamen.
+  return `Je verbetert de veelgestelde vragen van prijstoets.nl. Je krijgt onderwerpen waar de chat de afgelopen weken geen goed antwoord op had, met hoe vaak ze voorkwamen.
 Maak maximaal 3 nieuwe vragen met antwoord, alleen als het antwoord volledig volgt uit feiten in de KENNISBANK (combineren of anders uitleggen mag). Noem in based_on_ids welke items je gebruikte.
 Kan een onderwerp niet uit de kennisbank beantwoord worden, zet het dan in gaps met in één zin wat er ontbreekt. Verzin nooit feiten.
 Huisstijl: "je", nooit "u". B1. Korte zinnen. Cijfers boven bijvoeglijke naamwoorden. Geen uitroeptekens. Antwoord max. 80 woorden. Vraag max. 14 woorden. Noem nooit installateurs of merken.

@@ -87,7 +87,7 @@
         if (!r.ok) { say("assistant", d.message || "Dat lukte niet. Probeer het opnieuw."); submit.disabled = false; return; }
         f.remove(); formShown = false;
         say("assistant", d.mode === "answered" ? `${d.answer}\n\nWe hebben dit antwoord ook naar je gemaild.` : d.message);
-      } catch { say("assistant", "Dat lukte niet. Mail ons gerust op hallo@kloptmijnofferte.nl."); submit.disabled = false; }
+      } catch { say("assistant", "Dat lukte niet. Mail ons gerust op hallo@prijstoets.nl."); submit.disabled = false; }
     };
     log.append(f); scroll(); email.focus();
   }
@@ -107,7 +107,7 @@
       if (d.answer && !d.escalate) m.append(feedback(d.sources?.[0]?.id || "", d.intent));
       if (d.show_form) contactForm(d.escalate);
     } catch {
-      wait.textContent = "De chat is even niet bereikbaar. Mail ons op hallo@kloptmijnofferte.nl.";
+      wait.textContent = "De chat is even niet bereikbaar. Mail ons op hallo@prijstoets.nl.";
     } finally { send.disabled = false; scroll(); }
   }
 

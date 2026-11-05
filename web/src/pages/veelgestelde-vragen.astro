@@ -4,7 +4,7 @@ import { KB } from "../../../src/core/support/kb";
 const groups: [string, string][] = [["check", "De check"], ["prijzen", "Prijzen en uitkomst"], ["subsidie", "ISDE-subsidie"], ["warmtepomp", "Hybride warmtepomp"], ["privacy", "Privacy"], ["over_ons", "Over ons"], ["contact", "Contact"]];
 const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: KB.map((e) => ({ "@type": "Question", name: e.question, acceptedAnswer: { "@type": "Answer", text: e.answer } })) };
 ---
-<Base title="Veelgestelde vragen over je warmtepompofferte | kloptmijnofferte.nl" description="Antwoorden over de offertecheck, de middenprijs, ISDE-subsidie voor een hybride warmtepomp en wat we met je gegevens doen.">
+<Base title="Veelgestelde vragen over je warmtepompofferte | prijstoets.nl" description="Antwoorden over de offertecheck, de middenprijs, ISDE-subsidie voor een hybride warmtepomp en wat we met je gegevens doen.">
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <h1>Veelgestelde vragen</h1>
   <p>Staat je vraag er niet bij? Vraag het <a href="#" data-open-chat>in de chat</a> of via <a href="/contact">contact</a>.</p>

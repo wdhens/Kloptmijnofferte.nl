@@ -1,4 +1,4 @@
-name = "kloptmijnofferte-api"
+name = "prijstoets-api"
 main = "src/worker/index.ts"
 compatibility_date = "2026-10-01"
 compatibility_flags = ["nodejs_compat"]
@@ -6,15 +6,15 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 DAILY_CAP_USD = "2"
 CONSENT_VERSION = "2026-11-05"
-ALLOWED_ORIGIN = "https://kloptmijnofferte.nl"
+ALLOWED_ORIGIN = "https://prijstoets.nl"
 AUTO_SHIP_VARIANTS = "true"
-SUPPORT_FROM = "hallo@kloptmijnofferte.nl"
+SUPPORT_FROM = "hallo@prijstoets.nl"
 SUPPORT_DAILY_CAP_USD = "1"
 AUTO_SHIP_FAQ = "true"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "kloptmijnofferte"
+database_name = "prijstoets"
 database_id = "REPLACE_AFTER_wrangler_d1_create"
 migrations_dir = "migrations"
 

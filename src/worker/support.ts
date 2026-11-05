@@ -76,7 +76,7 @@ export async function sendMail(env: Env, m: Mail): Promise<boolean> {
     method: "POST",
     headers: { "api-key": env.BREVO_API_KEY, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({
-      sender: { email: env.SUPPORT_FROM, name: "kloptmijnofferte.nl" },
+      sender: { email: env.SUPPORT_FROM, name: "prijstoets.nl" },
       to: [{ email: m.to }],
       subject: m.subject,
       textContent: m.text,
@@ -87,7 +87,7 @@ export async function sendMail(env: Env, m: Mail): Promise<boolean> {
   return !!res?.ok;
 }
 
-const FOOTER = "\n\nDit antwoord is opgesteld door onze AI-assistent op basis van onze uitleg. Klopt er iets niet of wil je een mens spreken? Antwoord dan op deze mail.\n\nkloptmijnofferte.nl, onafhankelijk. We krijgen geen geld van installateurs.";
+const FOOTER = "\n\nDit antwoord is opgesteld door onze AI-assistent op basis van onze uitleg. Klopt er iets niet of wil je een mens spreken? Antwoord dan op deze mail.\n\nprijstoets.nl, onafhankelijk. We krijgen geen geld van installateurs.";
 
 function dueDate(kind: string, from = new Date()): string {
   const d = new Date(from);
@@ -104,7 +104,7 @@ async function draftReply(env: Env, kind: string, message: string): Promise<stri
   try {
     const res = await client.messages.create({
       model: MODELS.small, max_tokens: 800,
-      system: `Je schrijft een concept-antwoord voor de eigenaar van kloptmijnofferte.nl (onafhankelijke check voor warmtepompoffertes, geen installateur, geen leadverkoop, beoordeelt prijzen en nooit bedrijven). Soort bericht: ${kind}. Nederlands, "je", B1, kort, vriendelijk, zonder beloftes over geld of juridische erkenning. Max. 120 woorden. Begin met "Hoi,".`,
+      system: `Je schrijft een concept-antwoord voor de eigenaar van prijstoets.nl (onafhankelijke check voor warmtepompoffertes, geen installateur, geen leadverkoop, beoordeelt prijzen en nooit bedrijven). Soort bericht: ${kind}. Nederlands, "je", B1, kort, vriendelijk, zonder beloftes over geld of juridische erkenning. Max. 120 woorden. Begin met "Hoi,".`,
       messages: [{ role: "user", content: maskText(message.slice(0, 4000)) }],
     });
     await addChatSpend(env, costUsd(MODELS.small, res.usage));
@@ -139,8 +139,8 @@ async function escalate(env: Env, c: Case, opts: { forwarded?: boolean; inReplyT
     const ack = ACK[c.kind];
     await sendMail(env, {
       to: c.email,
-      subject: `${opts.subject ? `Re: ${opts.subject.replace(REF_RE, "").trim()} ` : "Je bericht aan kloptmijnofferte.nl "}[${c.ref}]`,
-      text: `${ack.trim()}${c.actions.length ? `\n\nWat we al voor je gedaan hebben: ${c.actions.join("; ")}.` : ""}\n\nJe referentie is ${c.ref}.\n\nkloptmijnofferte.nl`,
+      subject: `${opts.subject ? `Re: ${opts.subject.replace(REF_RE, "").trim()} ` : "Je bericht aan prijstoets.nl "}[${c.ref}]`,
+      text: `${ack.trim()}${c.actions.length ? `\n\nWat we al voor je gedaan hebben: ${c.actions.join("; ")}.` : ""}\n\nJe referentie is ${c.ref}.\n\nprijstoets.nl`,
       inReplyTo: opts.inReplyTo,
     });
   }
@@ -242,7 +242,7 @@ export async function handleContact(req: Request, env: Env) {
 const fmt = (iso: string) => new Date(iso + "T12:00:00Z").toLocaleDateString("nl-NL", { day: "numeric", month: "long", timeZone: "Europe/Amsterdam" });
 const linksText = (a: SupportAnswer) => {
   const links = a.sources.flatMap((s) => s.links ?? []);
-  return links.length ? `\n\nMeer lezen:\n${[...new Map(links.map((l) => [l.href, l])).values()].map((l) => `- ${l.label}: ${l.href.startsWith("http") ? l.href : `https://kloptmijnofferte.nl${l.href}`}`).join("\n")}` : "";
+  return links.length ? `\n\nMeer lezen:\n${[...new Map(links.map((l) => [l.href, l])).values()].map((l) => `- ${l.label}: ${l.href.startsWith("http") ? l.href : `https://prijstoets.nl${l.href}`}`).join("\n")}` : "";
 };
 
 async function bump(env: Env, channel: string, intent: string, outcome: string) {
