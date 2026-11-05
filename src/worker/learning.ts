@@ -70,7 +70,7 @@ Huisstijl: "je", nooit "u". Korte zinnen, B1. Cijfers boven bijvoeglijke naamwoo
 }
 
 /** Weekly: decide tests, promote winners, add one new challenger per finished test, store a report. */
-export async function weeklyLearning(env: Env) {
+export async function weeklyLearning(env: Env, extra: Record<string, unknown> = {}) {
   await seedVariants(env);
   const since = new Date(Date.now() - 28 * 864e5).toISOString().slice(0, 10);
   const now = new Date().toISOString();
@@ -79,7 +79,7 @@ export async function weeklyLearning(env: Env) {
   const { results: dur } = await env.DB.prepare("SELECT bucket, SUM(count) AS count FROM durations WHERE day >= ? GROUP BY bucket").bind(since).all<{ bucket: number; count: number }>();
   const median_secs = medianFromBuckets(dur);
   const time_claim_flags: unknown[] = [];
-  const report: Record<string, unknown> = { created_at: now, window_days: 28, funnel, median_upload_to_report_secs: median_secs, time_claim_flags, experiments: [] as unknown[] };
+  const report: Record<string, unknown> = { created_at: now, window_days: 28, funnel, median_upload_to_report_secs: median_secs, time_claim_flags, experiments: [] as unknown[], ...extra };
 
   for (const e of EXPERIMENTS) {
     const { results: rows } = await env.DB.prepare("SELECT exp, id, copy, source, status FROM variants WHERE exp = ?").bind(e.id).all<VRow>();

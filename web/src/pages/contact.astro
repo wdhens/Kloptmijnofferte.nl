@@ -1,0 +1,48 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Contact met kloptmijnofferte.nl" description="Stel je vraag over je offerte, de ISDE-subsidie of privacy. Vaak heb je binnen een paar minuten antwoord. Bij een klacht of privacyverzoek kijkt een mens mee.">
+  <h1>Contact</h1>
+  <p>Vaak staat je antwoord al bij de <a href="/veelgestelde-vragen">veelgestelde vragen</a>, of vraag het <a href="#" data-open-chat>in de chat</a>.</p>
+  <p>Liever per mail? Vul het formulier in of mail naar <a href="mailto:hallo@kloptmijnofferte.nl">hallo@kloptmijnofferte.nl</a>. Een vraag die we uit onze uitleg kunnen beantwoorden, krijg je meestal binnen een paar minuten terug, opgesteld door onze AI-assistent. Bij een klacht, een privacyverzoek of een vraag over een installateur kijkt een mens mee. Dan reageren we binnen 5 werkdagen, bij een privacyverzoek binnen een maand.</p>
+
+  <form id="contact" class="card">
+    <label>Je e-mailadres<br /><input type="email" name="email" required autocomplete="email" /></label>
+    <label>Waar gaat het over?<br />
+      <select name="kind">
+        <option value="">Een vraag</option>
+        <option value="klacht">Een klacht</option>
+        <option value="privacy">Mijn gegevens (privacy)</option>
+        <option value="installateur">Een installateur</option>
+        <option value="zakelijk">Zakelijk of pers</option>
+      </select>
+    </label>
+    <label>Je bericht<br /><textarea name="message" rows="6" required maxlength="4000" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit"></textarea></label>
+    <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
+    <p class="muted">We gebruiken je e-mailadres alleen om je te antwoorden en wissen je bericht na 30 dagen. Zet geen adres of telefoonnummer in je bericht als dat niet nodig is.</p>
+    <button type="submit">Verstuur</button>
+  </form>
+  <div id="contact-result" class="card" hidden aria-live="polite"></div>
+
+  <script is:inline>
+    (() => {
+      const api = document.documentElement.dataset.api || "";
+      const f = document.getElementById("contact"), out = document.getElementById("contact-result"), t0 = Date.now();
+      f.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const b = f.querySelector("button"); b.disabled = true;
+        const fd = new FormData(f);
+        try {
+          const r = await fetch(`${api}/api/contact`, { method: "POST", headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: fd.get("email"), message: fd.get("message"), kind: fd.get("kind"), website: fd.get("website"), elapsed_ms: Date.now() - t0 }) });
+          const d = await r.json();
+          out.hidden = false;
+          if (!r.ok) { out.textContent = d.message || "Dat lukte niet. Probeer het opnieuw."; b.disabled = false; return; }
+          f.hidden = true;
+          out.textContent = d.mode === "answered" ? `${d.answer}\n\nWe hebben dit antwoord ook naar je gemaild. Klopt er iets niet? Antwoord dan op die mail, dan kijkt een mens mee.` : d.message;
+          out.style.whiteSpace = "pre-wrap";
+        } catch { out.hidden = false; out.textContent = "Dat lukte niet. Mail ons op hallo@kloptmijnofferte.nl."; b.disabled = false; }
+      });
+    })();
+  </script>
+</Base>

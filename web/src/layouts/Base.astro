@@ -9,6 +9,7 @@ const { title, description } = Astro.props;
     <title>{title}</title>
     <meta name="description" content={description} />
     <script src="/k.js" is:inline defer></script>
+    <script src="/chat.js" is:inline defer></script>
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
     <style is:global>
       :root { --bg:#fbfaf7; --fg:#1d2321; --muted:#5b6662; --line:#dfe3e0; --accent:#1f6f54; --low:#2f7d4f; --mid:#8a6d1d; --high:#a33b2b; --card:#fff; }
@@ -33,8 +34,8 @@ const { title, description } = Astro.props;
     </style>
   </head>
   <body>
-    <header><a href="/">kloptmijnofferte.nl</a><nav><a href="/bereken">Bereken</a><a href="/prijzen/hybride-warmtepomp">Prijzen</a><a href="/privacy">Privacy</a></nav></header>
+    <header><a href="/">kloptmijnofferte.nl</a><nav><a href="/bereken">Bereken</a><a href="/prijzen/hybride-warmtepomp">Prijzen</a><a href="/veelgestelde-vragen">Vragen</a><a href="/privacy">Privacy</a></nav></header>
     <main><slot /></main>
-    <footer class="muted">Onafhankelijk. We krijgen geen geld van installateurs en verkopen geen leads. We beoordelen prijzen, nooit bedrijven.</footer>
+    <footer class="muted">Onafhankelijk. We krijgen geen geld van installateurs en verkopen geen leads. We beoordelen prijzen, nooit bedrijven. <a href="/contact">Contact</a></footer>
   </body>
 </html>

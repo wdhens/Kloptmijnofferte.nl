@@ -57,3 +57,18 @@ export function toPc4(postcode: string | undefined): string | undefined {
   const m = postcode?.match(/\b([1-9]\d{3})/);
   return m?.[1];
 }
+
+/**
+ * Replace personal data in free text with placeholders, before it reaches a model or a log.
+ * Used for chat and support messages. Catches the same kinds as scanText.
+ */
+export function maskText(text: string): string {
+  return text
+    .replace(new RegExp(EMAIL.source, "gi"), "[e-mail]")
+    .replace(new RegExp(IBAN.source, "g"), (m) => (isValidIban(m) ? "[rekeningnummer]" : m))
+    .replace(new RegExp(EAN.source, "g"), "[EAN-code]")
+    .replace(new RegExp(PHONE.source, "g"), "[telefoon]")
+    .replace(NINE_DIGITS, (m) => (isValidBsn(m) ? "[BSN]" : m))
+    .replace(new RegExp(POSTCODE_FULL.source, "g"), (m) => `${m.slice(0, 4)} [..]`)
+    .replace(new RegExp(STREET.source, "g"), "[adres]");
+}

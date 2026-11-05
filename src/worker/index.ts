@@ -6,9 +6,11 @@ import { checkFairness, priorBand, type Band } from "../core/fairness";
 import { computeIsde, ISDE_CONDITIONS } from "../core/isde";
 import { aggregate, K_MIN, INSTALLERS_MIN } from "../core/aggregate";
 import { recordEvent, activeExperiments, weeklyLearning, latestReport } from "./learning";
+import { handleChat, handleChatFeedback, handleContact, handleEmail, handleFaq, dailySupport, weeklySupport } from "./support";
 import { seedTariffs, tariffsFromCbs, type Tariffs } from "../core/savings";
 
 const WEEKLY_CRON = "0 7 * * 1";
+const DAILY_CRON = "30 4 * * *";
 const CBS = "https://opendata.cbs.nl/ODataApi/OData/85592NED";
 
 export interface Env {
@@ -21,6 +23,12 @@ export interface Env {
   AUTO_SHIP_VARIANTS: string;
   REPORT_TOKEN?: string;
   REPORT_WEBHOOK_URL?: string;
+  // Support function
+  SUPPORT_FROM: string;            // sender address, e.g. hallo@kloptmijnofferte.nl (Brevo-verified)
+  SUPPORT_DAILY_CAP_USD?: string;  // model spend cap for chat and mail answers
+  AUTO_SHIP_FAQ?: string;          // "true": learned FAQ entries go live after the checks
+  BREVO_API_KEY?: string;          // secret
+  OWNER_EMAIL?: string;            // secret: where escalations go (verified Email Routing destination)
 }
 
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -168,9 +176,25 @@ async function handleTariffs(env: Env) {
   return new Response(JSON.stringify(t), { headers: { "content-type": "application/json", "access-control-allow-origin": env.ALLOWED_ORIGIN, "cache-control": "public, max-age=86400" } });
 }
 
+/** Weekly: the A/B report and the support report go out together, as one report and one webhook call. */
+async function weeklyWithSupport(env: Env) {
+  const support = await weeklySupport(env).catch((e) => ({ error: e instanceof Error ? e.message : "unknown" }));
+  await weeklyLearning(env, { support });
+}
+
 export default {
   async scheduled(c: ScheduledController, env: Env, ctx: ExecutionContext) {
-    ctx.waitUntil(c.cron === WEEKLY_CRON ? weeklyLearning(env) : refreshTariffs(env));
+    if (c.cron === DAILY_CRON) return ctx.waitUntil(dailySupport(env));
+    if (c.cron === WEEKLY_CRON) return ctx.waitUntil(weeklyWithSupport(env));
+    ctx.waitUntil(refreshTariffs(env));
+  },
+
+  async email(message: ForwardableEmailMessage, env: Env) {
+    try { await handleEmail(message, env); }
+    catch (e) {
+      console.error("email handler", e instanceof Error ? e.message : "unknown");
+      if (env.OWNER_EMAIL) await message.forward(env.OWNER_EMAIL).catch(() => {});
+    }
   },
 
   async fetch(req: Request, env: Env): Promise<Response> {
@@ -184,6 +208,10 @@ export default {
       if (req.method === "GET" && pathname === "/api/prices") return await handlePrices(env);
       if (req.method === "GET" && pathname === "/api/tarieven") return await handleTariffs(env);
       if (req.method === "POST" && pathname === "/api/e") { await recordEvent(req, env); return new Response(null, { status: 204, headers: { "access-control-allow-origin": env.ALLOWED_ORIGIN } }); }
+      if (req.method === "POST" && pathname === "/api/chat") return await handleChat(req, env);
+      if (req.method === "POST" && pathname === "/api/chat/feedback") return await handleChatFeedback(req, env);
+      if (req.method === "POST" && pathname === "/api/contact") return await handleContact(req, env);
+      if (req.method === "GET" && pathname === "/api/faq") return await handleFaq(env);
       if (req.method === "GET" && pathname === "/api/experiments") return json(env, await activeExperiments(env));
       if (req.method === "GET" && pathname === "/api/report") {
         if (!env.REPORT_TOKEN || new URL(req.url).searchParams.get("token") !== env.REPORT_TOKEN) return json(env, { error: "forbidden" }, 403);

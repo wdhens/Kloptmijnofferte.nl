@@ -1,0 +1,38 @@
+---
+import Base from "../layouts/Base.astro";
+import { KB } from "../../../src/core/support/kb";
+const groups: [string, string][] = [["check", "De check"], ["prijzen", "Prijzen en uitkomst"], ["subsidie", "ISDE-subsidie"], ["warmtepomp", "Hybride warmtepomp"], ["privacy", "Privacy"], ["over_ons", "Over ons"], ["contact", "Contact"]];
+const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: KB.map((e) => ({ "@type": "Question", name: e.question, acceptedAnswer: { "@type": "Answer", text: e.answer } })) };
+---
+<Base title="Veelgestelde vragen over je warmtepompofferte | kloptmijnofferte.nl" description="Antwoorden over de offertecheck, de middenprijs, ISDE-subsidie voor een hybride warmtepomp en wat we met je gegevens doen.">
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <h1>Veelgestelde vragen</h1>
+  <p>Staat je vraag er niet bij? Vraag het <a href="#" data-open-chat>in de chat</a> of via <a href="/contact">contact</a>.</p>
+  {groups.map(([topic, label]) => (
+    <section>
+      <h2>{label}</h2>
+      {KB.filter((e) => e.topic === topic).map((e) => (
+        <details id={e.id}>
+          <summary><b>{e.question}</b></summary>
+          <p>{e.answer}</p>
+          {e.links?.length ? <p class="muted">{e.links.map((l) => <a href={l.href} style="margin-right:12px">{l.label}</a>)}</p> : null}
+        </details>
+      ))}
+    </section>
+  ))}
+  <section id="meer" hidden><h2>Meer vragen</h2></section>
+  <script is:inline>
+    (() => {
+      const api = document.documentElement.dataset.api || "";
+      fetch(`${api}/api/faq`).then((r) => (r.ok ? r.json() : [])).then((items) => {
+        if (!items.length) return;
+        const s = document.getElementById("meer"); s.hidden = false;
+        for (const it of items) {
+          const d = document.createElement("details"), sm = document.createElement("summary"), b = document.createElement("b"), p = document.createElement("p");
+          b.textContent = it.question; p.textContent = it.answer; sm.append(b); d.append(sm, p); s.append(d);
+        }
+      }).catch(() => {});
+    })();
+  </script>
+  <style>details{border-bottom:1px solid var(--line);padding:10px 0} summary{cursor:pointer}</style>
+</Base>

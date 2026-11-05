@@ -8,6 +8,9 @@ DAILY_CAP_USD = "2"
 CONSENT_VERSION = "2026-11-05"
 ALLOWED_ORIGIN = "https://kloptmijnofferte.nl"
 AUTO_SHIP_VARIANTS = "true"
+SUPPORT_FROM = "hallo@kloptmijnofferte.nl"
+SUPPORT_DAILY_CAP_USD = "1"
+AUTO_SHIP_FAQ = "true"
 
 [[d1_databases]]
 binding = "DB"
@@ -15,7 +18,8 @@ database_name = "kloptmijnofferte"
 database_id = "REPLACE_AFTER_wrangler_d1_create"
 migrations_dir = "migrations"
 
-# Secrets (wrangler secret put): ANTHROPIC_API_KEY, INSTALLER_HMAC_KEY, REPORT_TOKEN, optional REPORT_WEBHOOK_URL (e.g. a Make webhook)
+# Secrets (wrangler secret put): ANTHROPIC_API_KEY, INSTALLER_HMAC_KEY, REPORT_TOKEN, optional REPORT_WEBHOOK_URL (e.g. a Make webhook),
+# support: BREVO_API_KEY, OWNER_EMAIL. Inbound mail: Cloudflare Email Routing, hallo@ -> "Send to a Worker" -> this worker.
 
 [triggers]
-crons = ["0 6 15 * *", "0 7 * * 1"]   # monthly CBS tariffs; weekly learning report (Mondays)
+crons = ["0 6 15 * *", "0 7 * * 1", "30 4 * * *"]   # monthly CBS tariffs; weekly learning + support report (Mondays); daily support housekeeping
